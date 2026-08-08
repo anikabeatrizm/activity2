@@ -7,7 +7,7 @@
 	<h1>Student CRUD System</h1>
 	<input type="hidden" id="editIndex" value="-1">
 	<label>Student ID:</label>
-	<input type="number" id="studentId">
+	<input type="text" id="studentId" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
 	<br><br>
 	<label>Student Name:</label>
 	<input type="text" id="studentName">
@@ -96,8 +96,8 @@
 		table.innerHTML = "";
 		if(students.length == 0){
 			table.innerHTML = "<tr>" + "<td colspan='5'>No student records found.</td>" + "</tr>";
+				document.getElementById("total").innerHTML = students.length;
 			return;
-			document.getElementById("total").innerHTML = students.length;
 		}
 		for(let index = 0; index <students.length; index++){
 			table.innerHTML += 
@@ -149,35 +149,95 @@
 	}
 	//SEARCH FUNCTION UPON TYPING
 	function searchStudent(){
-		let info = document.getElementById("search").value;
-		let id = document.getElementById("studentId").value;
-		let name = document.getElementById("studentName").value;
-		let course = document.getElementById("studentCourse").value;
+	let info = document.getElementById("search").value.toLowerCase();
+	let table = document.getElementById("studentTable");
 
-		let table = document.getElementById("studentTable");
-		table.innerHTML = "";
-		
-		for(let i=0; i<students.length; i++){
-			if(info==students[i].id||info==students[i].name||info==students[i].course){
-			table.innerHTML += 
-			"<tr>" +
-			 "<td>" + (i+1) + "</td>" +
-			 "<td>" + students[i].id+ "</td>" +
-			 "<td>" + students[i].name+ "</td>" +
-			 "<td>" + students[i].course+ "</td>" +
-			 "<td>" + "<button onclick = 'editStudent(" + i + ")'>Edit</button> "
-			 + "<button onclick = 'deleteStudent(" + i + ")'>Delete</button>"
-			  + "</td>" +
-			  "</tr>";
-			}if(students.length == 0){
-				table.innerHTML = "<tr>" + "<td colspan='5'>No student records found.</td>" + "</tr>";
-				return;
+	table.innerHTML = "";
+
+	if(info == ""){
+		displayStudents();
+		return;
+	}
+
+	let found = false;
+
+	for(let i=0; i<students.length; i++){
+
+		let id = students[i].id.toLowerCase();
+		let name = students[i].name.toLowerCase();
+		let course = students[i].course.toLowerCase();
+
+		let match = false;
+
+		// Search ID
+		for(let j=0; j<=id.length-info.length; j++){
+			let part = "";
+
+			for(let k=0; k<info.length; k++){
+				part += id[j+k];
+			}
+			
+			if(part == info){
+				match = true;
+				break;
 			}
 		}
-		if(info==""){
-			displayStudents();
+
+		// Search Name
+		if(match == false){
+			for(let j=0; j<=name.length-info.length; j++){
+				let part = "";
+
+				for(let k=0; k<info.length; k++){
+					part += name[j+k];
+				}
+
+				if(part == info){
+					match = true;
+					break;
+				}
+			}
+		}
+
+		// Search Course
+		if(match == false){
+			for(let j=0; j<=course.length-info.length; j++){
+				let part = "";
+
+				for(let k=0; k<info.length; k++){
+					part += course[j+k];
+				}
+
+				if(part == info){
+					match = true;
+					break;
+				}
+			}
+		}
+
+		if(match){
+			table.innerHTML += 
+			"<tr>" +
+				"<td>" + (i+1) + "</td>" +
+				"<td>" + students[i].id + "</td>" +
+				"<td>" + students[i].name + "</td>" +
+				"<td>" + students[i].course + "</td>" +
+				"<td>" +
+					"<button onclick='editStudent(" + i + ")'>Edit</button> " +
+					"<button onclick='deleteStudent(" + i + ")'>Delete</button>" +
+				"</td>" +
+			"</tr>";
+
+			found = true;
 		}
 	}
+
+	if(found == false){
+		table.innerHTML = "<tr>" +
+			"<td colspan='5'>No student records found.</td>" +
+			"</tr>";
+	}
+}
 	function sortByName(){
 		let len = students.length;
 		let swapped;
@@ -187,7 +247,7 @@
 			swapped=false;
 			for(let j=0; j<len-i-1; j++){
 				if(students[j].name>students[j+1].name){
-					[students[j].name, students[j+1].name] = [students[j+1].name, students[j].name];
+					[students[j], students[j+1]] = [students[j+1], students[j]];
 					swapped = true;
 				}
 			}
